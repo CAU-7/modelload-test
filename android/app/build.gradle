@@ -80,8 +80,10 @@ android {
     namespace "com.test"
     defaultConfig {
         applicationId "com.test"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+//        minSdkVersion rootProject.ext.minSdkVersion
+//        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion 24
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
     }

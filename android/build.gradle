@@ -1,21 +1,22 @@
 buildscript {
     ext {
-        buildToolsVersion = "35.0.0"
-        minSdkVersion = 24
-        compileSdkVersion = 35
-        targetSdkVersion = 34
-        ndkVersion = "26.1.10909125"
-        kotlinVersion = "1.9.24"
+        buildToolsVersion = "35.0.0" // 최신 빌드 도구 버전 확인 필요
+        minSdkVersion = 21          // 최소 SDK 버전
+        compileSdkVersion = 33      // 컴파일 대상 SDK 버전
+        targetSdkVersion = 33       // 타겟 SDK 버전
+        ndkVersion = "26.1.10909125" // NDK 버전
+        kotlinVersion = "1.9.24"    // Kotlin 버전
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
-        classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath('com.android.tools.build:gradle:8.7.2') // Gradle Plugin 버전
+        classpath("com.facebook.react:react-native-gradle-plugin:0.73.5") // React Native 플러그인 버전
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}") // Kotlin 플러그인
     }
 }
 
+// React Native 루트 플러그인 적용
 apply plugin: "com.facebook.react.rootproject"
