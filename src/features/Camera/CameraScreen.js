@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Button, StyleSheet} from 'react-native';
+import {View, Text, Button, StyleSheet, Alert, Linking} from 'react-native';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
 
 const CameraScreen = ({navigateBack}) => {
@@ -16,9 +16,28 @@ const CameraScreen = ({navigateBack}) => {
         } else {
           const newStatus = await Camera.requestCameraPermission();
           console.log('New Camera Permission Status:', newStatus);
-          setHasPermission(
-            newStatus === 'granted' || newStatus === 'authorized',
-          );
+
+          if (newStatus === 'denied' || newStatus === 'restricted') {
+            Alert.alert(
+              '카메라 권한 필요',
+              '카메라 사용을 위해 권한이 필요합니다. 설정에서 권한을 허용해주세요.',
+              [
+                {
+                  text: '취소',
+                  style: 'cancel',
+                  onPress: () => setHasPermission(false),
+                },
+                {
+                  text: '설정으로 이동',
+                  onPress: () => Linking.openSettings(),
+                },
+              ],
+            );
+          } else {
+            setHasPermission(
+              newStatus === 'granted' || newStatus === 'authorized',
+            );
+          }
         }
       } catch (error) {
         console.error('Permission check error:', error);
