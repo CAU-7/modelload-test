@@ -13,8 +13,11 @@
     "@react-navigation/stack": "^7.0.13",
     "react": "18.3.1",
     "react-native": "0.76.3",
+    "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.21.2",
     "react-native-permissions": "^5.2.0",
+    "react-native-reanimated": "^3.16.3",
+    "react-native-tflite": "^0.0.2",
     "react-native-vision-camera": "^4.6.3"
   },
   "devDependencies": {
