@@ -2,8 +2,8 @@ buildscript {
     ext {
         buildToolsVersion = "35.0.0" // 최신 빌드 도구 버전 확인 필요
         minSdkVersion = 24          // 최소 SDK 버전
-        compileSdkVersion = 33      // 컴파일 대상 SDK 버전
-        targetSdkVersion = 33       // 타겟 SDK 버전
+        compileSdkVersion = 34      // 컴파일 대상 SDK 버전
+        targetSdkVersion = 34       // 타겟 SDK 버전
         ndkVersion = "26.1.10909125" // NDK 버전
         kotlinVersion = "1.9.24"    // Kotlin 버전
     }
