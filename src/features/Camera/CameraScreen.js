@@ -30,16 +30,17 @@ const CameraScreen = ({navigateBack}) => {
   }, []);
 
   const devices = useCameraDevices();
-  const device = devices && devices[0];
+  const device =
+    devices?.find(camera => camera.position === 'back') || devices?.[0];
+  //   const device = devices && devices[0];
 
-  useEffect(() => {
-    if (devices) {
-      console.log('Selected device:', device);
-    }
-  }, [devices, device]);
+  //   useEffect(() => {
+  //     if (devices) {
+  //       console.log('Selected device:', device);
+  //     }
+  //   }, [devices, device]);
 
   if (!device) {
-    // console.log('Available devices:', devices);
     return (
       <View style={styles.container}>
         <Text>Loading camera...</Text>
@@ -53,7 +54,7 @@ const CameraScreen = ({navigateBack}) => {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>카메라 권한이 필요합니다.</Text>
-        <Button title="뒤로 가기" onPress={navigateBack} />
+        <Button title="Go Ba ck" onPress={navigateBack} />
       </View>
     );
   }
