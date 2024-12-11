@@ -5,7 +5,8 @@ buildscript {
         compileSdkVersion = 34      // 컴파일 대상 SDK 버전
         targetSdkVersion = 34       // 타겟 SDK 버전
         ndkVersion = "26.1.10909125" // NDK 버전
-        kotlinVersion = "1.9.24"    // Kotlin 버전
+        kotlinVersion = "1.8.21"
+        // kotlinVersion = "1.9.24"    // Kotlin 버전
     }
     repositories {
         google()
