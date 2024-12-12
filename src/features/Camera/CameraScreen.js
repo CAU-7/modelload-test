@@ -1,6 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Button, StyleSheet, Alert, Linking} from 'react-native';
-import {Camera, useCameraDevices} from 'react-native-vision-camera';
+import {
+  Camera,
+  useCameraDevices,
+  useFrameProcessor,
+} from 'react-native-vision-camera';
 
 const CameraScreen = ({navigateBack}) => {
   const [hasPermission, setHasPermission] = useState(false);
@@ -51,13 +55,19 @@ const CameraScreen = ({navigateBack}) => {
   const devices = useCameraDevices();
   const device =
     devices?.find(camera => camera.position === 'back') || devices?.[0];
-  //   const device = devices && devices[0];
 
-  //   useEffect(() => {
-  //     if (devices) {
-  //       console.log('Selected device:', device);
-  //     }
-  //   }, [devices, device]);
+  const frameProcessor = useFrameProcessor(frame => {
+    'worklet';
+    frame.incrementRefCount(); // 프레임 참조 증가
+    try {
+      console.log(`Processing frame: ${frame.toString()}`);
+      // runOnJS(() => {
+      console.log(`Frame timestamp: ${frame.timestamp}`);
+      // })();
+    } finally {
+      frame.decrementRefCount(); // 참조 감소
+    }
+  }, []);
 
   if (!device) {
     return (
@@ -80,7 +90,13 @@ const CameraScreen = ({navigateBack}) => {
 
   return (
     <View style={styles.container}>
-      <Camera style={StyleSheet.absoluteFill} device={device} isActive={true} />
+      <Camera
+        style={StyleSheet.absoluteFill}
+        device={device}
+        isActive={true}
+        frameProcessor={frameProcessor} // Frame Processor 추가
+        frameProcessorFps={1} // 초당 1 프레임 처리
+      />
       <Button title="Go Back" onPress={navigateBack} style={styles.button} />
     </View>
   );
