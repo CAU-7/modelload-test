@@ -5,6 +5,7 @@ import {
   useCameraDevices,
   useFrameProcessor,
 } from 'react-native-vision-camera';
+import {Worklets} from 'react-native-worklets-core';
 
 const CameraScreen = ({navigateBack}) => {
   const [hasPermission, setHasPermission] = useState(false);
@@ -56,14 +57,18 @@ const CameraScreen = ({navigateBack}) => {
   const device =
     devices?.find(camera => camera.position === 'back') || devices?.[0];
 
+  // JavaScript 함수 정의 및 Worklets로 래핑
+  const processFrameData = timestamp => {
+    console.log(`Frame processed at: ${timestamp}`);
+  };
+  const processFrameDataJS = Worklets.createRunOnJS(processFrameData);
+
   const frameProcessor = useFrameProcessor(frame => {
     'worklet';
     frame.incrementRefCount(); // 프레임 참조 증가
     try {
-      console.log(`Processing frame: ${frame.toString()}`);
-      // runOnJS(() => {
-      console.log(`Frame timestamp: ${frame.timestamp}`);
-      // })();
+      // Worklets에서 래핑된 함수 호출
+      processFrameDataJS(frame.timestamp);
     } finally {
       frame.decrementRefCount(); // 참조 감소
     }
