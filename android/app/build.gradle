@@ -107,6 +107,12 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    externalNativeBuild {
+        cmake {
+            path file("CMakeLists.txt")
+        }
+    }
 }
 
 dependencies {
