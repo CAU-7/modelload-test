@@ -125,7 +125,7 @@
 // };
 
 // export default App;
-
+import 'react-native-reanimated';
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import HomeScreen from './screens/HomeScreen';

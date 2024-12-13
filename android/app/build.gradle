@@ -110,12 +110,20 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    externalNativeBuild {
+        cmake {
+            path file("CMakeLists.txt")
+        }
+    }
 }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-
+    implementation project(":react-native-vision-camera") // Vision Camera 추가 
+    implementation project(":react-native-worklets-core") // 여기 추가
+    implementation 'org.tensorflow:tensorflow-lite:2.13.0'
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

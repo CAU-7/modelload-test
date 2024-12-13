@@ -9,7 +9,6 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 
 // VisionCamera와 Worklets 관련 임포트
@@ -47,17 +46,11 @@ class MainApplication : Application(), ReactApplication {
     override val reactHost: ReactHost
         get() = getDefaultReactHost(applicationContext, reactNativeHost)
 
-    override fun onCreate() {
-        super.onCreate()
-        SoLoader.init(this, OpenSourceMergedSoMapping)
-        if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-            // 새로운 아키텍처를 활성화한 경우, 네이티브 엔트리 포인트를 로드합니다.
-            load()
-        }
-
-        // VisionCamera Frame Processor Plugin 설치
-        VisionCameraFrameProcessorPlugin.register()
-        // Worklets 플러그인 설치
-        Worklets.install()
+  override fun onCreate() {
+    super.onCreate()
+    SoLoader.init(this, /* native exopackage */ false)
+    if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+      load()
     }
+  }
 }
