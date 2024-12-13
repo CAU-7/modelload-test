@@ -93,7 +93,7 @@ const CameraScreen = ({navigateBack}) => {
         device={device}
         isActive={true}
         frameProcessor={frameProcessor} // Frame Processor 추가
-        frameProcessorFps={1} // 초당 1 프레임 처리
+        frameProcessorFps={15} // 초당 15 프레임 처리
       />
       <Button title="Go Back" onPress={navigateBack} style={styles.button} />
     </View>
