@@ -1,14 +1,20 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Button, StyleSheet, Alert, Linking} from 'react-native';
+import Tflite from 'react-native-tflite';
 import {
   Camera,
   useCameraDevices,
   useFrameProcessor,
 } from 'react-native-vision-camera';
 import {Worklets} from 'react-native-worklets-core';
+import {resize} from 'vision-camera-resize-plugin';
+
+const tflite = new Tflite();
 
 const CameraScreen = ({navigateBack}) => {
   const [hasPermission, setHasPermission] = useState(false);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
+  const [result, setResult] = useState(null);
 
   useEffect(() => {
     const checkPermission = async () => {
@@ -50,35 +56,95 @@ const CameraScreen = ({navigateBack}) => {
       }
     };
 
+    const loadModel = async () => {
+      tflite.loadModel(
+        {
+          model: 'models/model.tflite', // 모델 파일 경로
+          labels: 'models/labels.txt', // 라벨 파일 경로
+          numThreads: 1, // 사용할 스레드 수
+        },
+        err => {
+          if (err) {
+            console.error('TensorFlow Lite 모델 로드 실패:', err);
+          } else {
+            console.log('TensorFlow Lite 모델 로드 성공');
+            setIsModelLoaded(true);
+          }
+        },
+      );
+    };
     checkPermission();
+    loadModel();
   }, []);
 
   const devices = useCameraDevices();
   const device =
     devices?.find(camera => camera.position === 'back') || devices?.[0];
 
-  // JavaScript 함수 정의 및 Worklets로 래핑
-  const processFrameData = timestamp => {
-    console.log(`Frame processed at: ${timestamp}`);
-  };
-  const processFrameDataJS = Worklets.createRunOnJS(processFrameData);
-
   const frameProcessor = useFrameProcessor(frame => {
     'worklet';
-    frame.incrementRefCount(); // 프레임 참조 증가
-    try {
-      // Worklets에서 래핑된 함수 호출
-      processFrameDataJS(frame.timestamp);
-    } finally {
-      frame.decrementRefCount(); // 참조 감소
-    }
+    Worklets.createRunOnJS(async frameData => {
+      const inputImage = await processFrameToInput(frameData);
+
+      if (!inputImage) {
+        console.warn(
+          '프레임 처리 중 문제가 발생하여 결과를 생성하지 못했습니다.',
+        );
+        return;
+      }
+
+      tflite.runModelOnImage(
+        {
+          path: inputImage, // 처리된 이미지 파일 경로
+          imageMean: 127.5, // 정규화 값
+          imageStd: 127.5, // 정규화 값
+          numResults: 3, // 출력할 결과 수
+          threshold: 0.5, // 결과 임계값
+        },
+        (err, res) => {
+          if (err) {
+            console.error('TensorFlow Lite 추론 실패:', err);
+          } else {
+            console.log('추론 결과:', res);
+            setResult(res);
+          }
+        },
+      );
+    })(frame.data);
   }, []);
+
+  const processFrameToInput = async frameData => {
+    try {
+      const resizedFrame = await resize(frameData, {
+        width: 320, // 320x320
+        height: 320,
+        keepAspectRatio: true,
+        format: 'rgba',
+      });
+
+      console.log(
+        '리사이즈된 프레임 크기:',
+        resizedFrame.width,
+        resizedFrame.height,
+      );
+
+      return resizedFrame.data;
+    } catch (error) {
+      console.error('프레임 리사이즈 중 오류 발생:', error);
+      return null;
+    }
+  };
+
+  // // JavaScript 함수 정의 및 Worklets로 래핑
+  // const processFrameData = timestamp => {
+  //   console.log(`Frame processed at: ${timestamp}`);
+  // };
 
   if (!device) {
     return (
       <View style={styles.container}>
         <Text>Loading camera...</Text>
-        <Button title="Go B ack" onPress={navigateBack} />
+        <Button title="Go Back" onPress={navigateBack} />
       </View>
     );
   }
@@ -88,7 +154,16 @@ const CameraScreen = ({navigateBack}) => {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>카메라 권한이 필요합니다.</Text>
-        <Button title="Go Ba ck" onPress={navigateBack} />
+        <Button title="Go Back" onPress={navigateBack} />
+      </View>
+    );
+  }
+
+  if (!isModelLoaded) {
+    return (
+      <View style={styles.container}>
+        <Text>fail to model load...</Text>
+        <Button title="Go Back" onPress={navigateBack} />
       </View>
     );
   }
@@ -99,10 +174,20 @@ const CameraScreen = ({navigateBack}) => {
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={true}
-        frameProcessor={frameProcessor} // Frame Processor 추가
-        frameProcessorFps={1} // 초당 1 프레임 처리
+        frameProcessor={frameProcessor}
+        frameProcessorFps={15} // 초당 15 프레임 처리
       />
-      <Button title="Go Back" onPress={navigateBack} style={styles.button} />
+      {result && (
+        <View style={styles.resultContainer}>
+          <Text style={styles.text}>추론 결과:</Text>
+          {result.map((item, index) => (
+            <Text key={index} style={styles.text}>
+              {item.label}: {item.confidence.toFixed(2)}
+            </Text>
+          ))}
+        </View>
+      )}
+      <Button title="돌아가기" onPress={navigateBack} style={styles.button} />
     </View>
   );
 };
@@ -110,7 +195,7 @@ const CameraScreen = ({navigateBack}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000',
   },
@@ -121,6 +206,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     marginBottom: 20,
+  },
+  resultContainer: {
+    position: 'absolute',
+    bottom: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    padding: 10,
+    borderRadius: 8,
   },
 });
 

@@ -1,4 +1,3 @@
-// 나중에 다시 체크해보기
 import React from 'react';
 import {View, Text, Button} from 'react-native';
 const {execFile} = require('child_process');
